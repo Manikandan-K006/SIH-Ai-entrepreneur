@@ -1,6 +1,9 @@
 import { Language } from "./translations";
 
-const API_BASE = "http://localhost:8000/api/v1";
+const RAW_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+const API_BASE = RAW_API_URL.endsWith("/api/v1")
+  ? RAW_API_URL
+  : `${RAW_API_URL.replace(/\/$/, "")}/api/v1`;
 
 interface FetchOptions extends RequestInit {
   token?: string;
@@ -64,10 +67,17 @@ async function request<T>(path: string, options: FetchOptions = {}): Promise<T> 
     headers.set("Content-Type", "application/json");
   }
 
-  const response = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers,
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers,
+    });
+  } catch (err: any) {
+    throw new Error(
+      `Unable to connect to backend server at ${API_BASE}. Please ensure the backend server is running.`
+    );
+  }
 
   if (response.status === 401) {
     // Session expired
@@ -90,11 +100,18 @@ export const api = {
     formData.append("username", email);
     formData.append("password", password);
 
-    const res: any = await fetch(`${API_BASE}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: formData,
-    });
+    let res: Response;
+    try {
+      res = await fetch(`${API_BASE}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData,
+      });
+    } catch (err: any) {
+      throw new Error(
+        `Unable to connect to backend server at ${API_BASE}. Please ensure the backend server is running.`
+      );
+    }
 
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({ detail: "Incorrect login details" }));
