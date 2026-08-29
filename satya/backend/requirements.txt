@@ -6,8 +6,10 @@ psycopg[binary]
 pgvector==0.3.2
 pydantic==2.9.2
 pydantic-settings==2.5.2
+email-validator==2.2.0
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
 python-multipart==0.0.9
 openai==1.51.0
 sentence-transformers==3.1.1
@@ -20,3 +22,4 @@ Pillow==10.4.0
 PyPDF2==3.0.1
 langchain-text-splitters==0.3.0
 tenacity==9.0.0
+
