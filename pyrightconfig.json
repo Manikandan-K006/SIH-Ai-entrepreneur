@@ -5,5 +5,10 @@
     "satya/backend",
     "satya/backend/venv/lib/python3.14/site-packages"
   ],
-  "reportMissingImports": false
+  "exclude": [
+    "**/__pyrefly_virtual__/**",
+    "**/inmemory/**"
+  ],
+  "reportMissingImports": false,
+  "reportUndefinedVariable": false
 }

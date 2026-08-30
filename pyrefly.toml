@@ -1,0 +1,5 @@
+[pyrefly]
+python_path = "satya/backend/venv/bin/python"
+search_paths = ["satya/backend", "satya/backend/venv/lib/python3.14/site-packages"]
+disabled_diagnostics = ["missing-import", "unknown-name", "parse-error"]
+ignore_paths = ["**/__pyrefly_virtual__/**", "**/inmemory/**"]
