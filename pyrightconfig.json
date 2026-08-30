@@ -1,0 +1,9 @@
+{
+  "venvPath": "satya/backend",
+  "venv": "venv",
+  "extraPaths": [
+    "satya/backend",
+    "satya/backend/venv/lib/python3.14/site-packages"
+  ],
+  "reportMissingImports": false
+}
