@@ -449,6 +449,115 @@ def seed_market_data(db):
     print(f"  {len(market_records)} market data records seeded")
 
 
+def seed_marketplace_and_card_data(db):
+    print("Seeding customer accounts, business profiles, products, promotions...")
+    from app.models.business import BusinessProfile, Product, Service
+    from app.models.promotion import PromotionCampaign
+    from app.models.marketplace import Order, OrderItem, Review
+    from app.models.customer import CustomerProfile
+
+    # 1. Customer User
+    customer_user = db.query(User).filter(User.email == "customer@satya.ai").first()
+    if not customer_user:
+        customer_user = User(
+            email="customer@satya.ai",
+            full_name="Anand Sharma",
+            role=UserRole.CUSTOMER,
+            password_hash=get_password_hash("Customer@1234"),
+            preferred_language="ta",
+            is_active=True,
+            is_demo=True,
+        )
+        db.add(customer_user)
+        db.commit()
+
+        cust_profile = CustomerProfile(
+            user_id=customer_user.id,
+            state="Tamil Nadu",
+            district="Salem",
+            village_town="Salem Town",
+            address="14 West Car Street, Salem",
+            preferred_categories=["Food Processing", "Textile"]
+        )
+        db.add(cust_profile)
+        db.commit()
+
+    # 2. Entrepreneur Business Profile
+    demo_user = db.query(User).filter(User.email == "demo@satya.ai").first()
+    if demo_user:
+        biz = db.query(BusinessProfile).filter(BusinessProfile.user_id == demo_user.id).first()
+        if not biz:
+            biz = BusinessProfile(
+                user_id=demo_user.id,
+                business_name="Lakshmi Cottage Foods",
+                business_category="Food Processing",
+                description="Authentic homemade pickles, papads, and traditional spice powders made with organic ingredients.",
+                stage="operational",
+                phone="+919443210987",
+                address="Near Yercaud Foothills, Salem",
+                village_town="Yercaud",
+                district="Salem",
+                state="Tamil Nadu",
+                pincode="636601",
+                delivery_available=True,
+                pickup_available=True,
+                verification_status="document_verified",
+                verification_notes="FSSAI registration & Aadhar verified by SATYA Admin",
+                share_code="satya-pickle-salem",
+                feasibility_score=85,
+                opportunity_score=82,
+                is_demo=True
+            )
+            db.add(biz)
+            db.commit()
+            db.refresh(biz)
+
+        # 3. Products
+        existing_prods = db.query(Product).filter(Product.business_profile_id == biz.id).all()
+        if not existing_prods:
+            p1 = Product(business_profile_id=biz.id, name="Homemade Mango Pickle", category="Food Processing", description="Spicy, traditional Salem style raw mango pickle in sesame oil.", price=150.0, unit="500g jar", in_stock=True, stock_quantity=25, is_promoted=True)
+            p2 = Product(business_profile_id=biz.id, name="Homemade Lemon Pickle", category="Food Processing", description="Tangy fermented sun-dried lemon pickle with zero preservatives.", price=140.0, unit="500g jar", in_stock=True, stock_quantity=20)
+            p3 = Product(business_profile_id=biz.id, name="Crunchy Garlic Papad", category="Food Processing", description="Handmade urad dal papad with fresh garlic and cumin.", price=80.0, unit="200g pack", in_stock=True, stock_quantity=50)
+            p4 = Product(business_profile_id=biz.id, name="Premium Garam Masala", category="Food Processing", description="Hand-ground whole aromatic spices roasted and blended.", price=120.0, unit="100g pack", in_stock=True, stock_quantity=30)
+            db.add_all([p1, p2, p3, p4])
+            db.commit()
+
+        # 4. Sponsored Promotion
+        existing_promo = db.query(PromotionCampaign).filter(PromotionCampaign.business_profile_id == biz.id).first()
+        if not existing_promo:
+            promo = PromotionCampaign(
+                business_profile_id=biz.id,
+                tier="sponsored_listing",
+                headline="Authentic Homemade Salem Pickles & Spice Powders — Direct Delivery!",
+                description="Special 10% discount on first local order. FSSAI verified.",
+                target_district="Salem",
+                target_category="Food Processing",
+                budget=500.0,
+                duration_days=7,
+                status="active",
+                impressions=142,
+                clicks=38,
+                payment_status="completed"
+            )
+            db.add(promo)
+            db.commit()
+
+        # 5. Customer Review
+        existing_rev = db.query(Review).filter(Review.business_profile_id == biz.id).first()
+        if not existing_rev and customer_user:
+            rev = Review(
+                customer_id=customer_user.id,
+                business_profile_id=biz.id,
+                rating=5,
+                comment="Very authentic mango pickle! Clean packaging and fast delivery in Salem.",
+                is_moderated=True
+            )
+            db.add(rev)
+            db.commit()
+
+    print("  Marketplace, customer, and digital card demo data seeded successfully")
+
+
 def main():
     db = SessionLocal()
     try:
@@ -461,10 +570,12 @@ def main():
         seed_organizations(db)
         seed_government_schemes(db)
         seed_market_data(db)
+        seed_marketplace_and_card_data(db)
         print("\n✅ Demo data seeding completed!")
         print("\nDemo credentials:")
-        print("  Admin:       admin@satya.ai / Admin@1234")
-        print("  Entrepreneur: demo@satya.ai  / Demo@1234")
+        print("  Admin:        admin@satya.ai     / Admin@1234")
+        print("  Entrepreneur: demo@satya.ai      / Demo@1234")
+        print("  Customer:     customer@satya.ai  / Customer@1234")
     except Exception as e:
         print(f"\n❌ Seeding failed: {e}")
         import traceback; traceback.print_exc()

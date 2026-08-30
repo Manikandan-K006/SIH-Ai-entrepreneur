@@ -74,7 +74,10 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-6">
+          <nav className="hidden md:flex items-center space-x-5 overflow-x-auto">
+            <Link href="/customer" className="text-emerald-600 hover:text-emerald-700 font-bold text-sm bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+              Customer Portal
+            </Link>
             <Link href="/dashboard" className="text-gray-700 hover:text-primary font-medium text-sm">
               {t.dashboard}
             </Link>
@@ -86,14 +89,23 @@ export default function Navbar() {
               <Briefcase className="w-4 h-4" />
               {t.createPlan}
             </Link>
+            <Link href="/marketing" className="text-gray-700 hover:text-primary font-medium text-sm">
+              Marketing AI
+            </Link>
+            <Link href="/promotions" className="text-gray-700 hover:text-primary font-medium text-sm">
+              Promotions
+            </Link>
+            <Link href="/card" className="text-gray-700 hover:text-primary font-medium text-sm">
+              Digital Card
+            </Link>
+            <Link href="/voice" className="text-gray-700 hover:text-primary font-medium text-sm">
+              Voice Helpline
+            </Link>
             <Link href="/financial" className="text-gray-700 hover:text-primary font-medium text-sm">
               {t.financialPlanner}
             </Link>
             <Link href="/schemes" className="text-gray-700 hover:text-primary font-medium text-sm">
               {t.govSchemes}
-            </Link>
-            <Link href="/market" className="text-gray-700 hover:text-primary font-medium text-sm">
-              {t.localMarket}
             </Link>
             <Link href="/network" className="text-gray-700 hover:text-primary font-medium text-sm">
               {t.peopleNetwork}

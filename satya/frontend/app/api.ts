@@ -353,5 +353,149 @@ export const api = {
 
   async getAILogs() {
     return request<any[]>("/admin/ai-logs");
+  },
+
+  // Customer Portal & AI Search
+  async getCustomerProfile() {
+    return request<any>("/customer/profile");
+  },
+
+  async updateCustomerProfile(data: any) {
+    return request<any>("/customer/profile", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async aiCustomerSearch(query: string, location?: string) {
+    let url = `/customer/search/ai?query=${encodeURIComponent(query)}`;
+    if (location) url += `&location=${encodeURIComponent(location)}`;
+    return request<any>(url);
+  },
+
+  async submitReview(businessProfileId: number, rating: number, comment?: string) {
+    return request<any>("/customer/reviews", {
+      method: "POST",
+      body: JSON.stringify({ business_profile_id: businessProfileId, rating, comment }),
+    });
+  },
+
+  async toggleSaveBusiness(businessProfileId: number) {
+    return request<any>(`/customer/saved/${businessProfileId}`, {
+      method: "POST",
+    });
+  },
+
+  // Marketplace
+  async listMarketplaceProducts(category?: string, businessId?: number) {
+    let url = "/marketplace/products";
+    const params: string[] = [];
+    if (category) params.push(`category=${encodeURIComponent(category)}`);
+    if (businessId) params.push(`business_id=${businessId}`);
+    if (params.length) url += `?${params.join("&")}`;
+    return request<any[]>(url);
+  },
+
+  async addProduct(productData: any) {
+    return request<any>("/marketplace/products", {
+      method: "POST",
+      body: JSON.stringify(productData),
+    });
+  },
+
+  async deleteProduct(productId: number) {
+    return request<any>(`/marketplace/products/${productId}`, {
+      method: "DELETE",
+    });
+  },
+
+  async createOrder(orderData: any) {
+    return request<any>("/marketplace/orders", {
+      method: "POST",
+      body: JSON.stringify(orderData),
+    });
+  },
+
+  async getOrders() {
+    return request<any>("/marketplace/orders");
+  },
+
+  async updateOrderStatus(orderId: number, status: string) {
+    return request<any>(`/marketplace/orders/${orderId}/status?status=${status}`, {
+      method: "PUT",
+    });
+  },
+
+  // AI Marketing Assistant
+  async generateMarketing(data: { product_or_business: string; location?: string; budget?: number; target_audience?: string; language?: string }) {
+    return request<any>("/marketing/generate", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Paid Promotions
+  async createPromotion(promoData: any) {
+    return request<any>("/promotions/campaigns", {
+      method: "POST",
+      body: JSON.stringify(promoData),
+    });
+  },
+
+  async getMyPromotions() {
+    return request<any[]>("/promotions/campaigns");
+  },
+
+  async getActivePromotions(category?: string, district?: string) {
+    let url = "/promotions/active";
+    const params: string[] = [];
+    if (category) params.push(`category=${encodeURIComponent(category)}`);
+    if (district) params.push(`district=${encodeURIComponent(district)}`);
+    if (params.length) url += `?${params.join("&")}`;
+    return request<any[]>(url);
+  },
+
+  // Digital Business Card
+  async getMyDigitalCard() {
+    return request<any>("/card/my-card");
+  },
+
+  async getPublicDigitalCard(shareCode: string) {
+    return request<any>(`/card/public/${shareCode}`);
+  },
+
+  // Voice Helpline & IVR
+  async startIVR(callerNumber = "+919876543210") {
+    return request<any>("/voice/ivr-start", {
+      method: "POST",
+      body: JSON.stringify({ caller_number: callerNumber }),
+    });
+  },
+
+  async sendDTMF(sessionId: string, keyPressed: string) {
+    return request<any>("/voice/dtmf", {
+      method: "POST",
+      body: JSON.stringify({ session_id: sessionId, key_pressed: keyPressed }),
+    });
+  },
+
+  async sendSpeechInput(sessionId: string, speechText: string, language = "ta") {
+    return request<any>("/voice/process-speech", {
+      method: "POST",
+      body: JSON.stringify({ session_id: sessionId, speech_text: speechText, language }),
+    });
+  },
+
+  async triggerMissedCall(callerNumber = "+919876543210") {
+    return request<any>("/voice/missed-call", {
+      method: "POST",
+      body: JSON.stringify({ caller_number: callerNumber }),
+    });
+  },
+
+  async sendSMSFallback(phone: string, text: string) {
+    return request<any>(`/voice/sms-fallback?phone=${encodeURIComponent(phone)}&text=${encodeURIComponent(text)}`, {
+      method: "POST",
+    });
   }
 };

@@ -17,6 +17,30 @@ class BusinessProfile(Base):
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     stage: Mapped[str] = mapped_column(String(50), default="idea", nullable=False)
 
+    # Location & Contact
+    phone: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    address: Mapped[str | None] = mapped_column(Text, nullable=True)
+    village_town: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    district: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    state: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    pincode: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
+    longitude: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+    # Operations & Media
+    photos: Mapped[list | None] = mapped_column(JSON, default=list, nullable=True)
+    videos: Mapped[list | None] = mapped_column(JSON, default=list, nullable=True)
+    opening_hours: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    delivery_available: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    pickup_available: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    languages: Mapped[list | None] = mapped_column(JSON, default=list, nullable=True)
+
+    # Verification & Public Digital Business Card
+    verification_status: Mapped[str] = mapped_column(String(50), default="unverified", nullable=False) # unverified, phone_verified, document_verified, admin_verified
+    verification_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    share_code: Mapped[str | None] = mapped_column(String(50), unique=True, index=True, nullable=True)
+    qr_code_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+
     # AI Analysis
     feasibility_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
     opportunity_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
@@ -36,6 +60,49 @@ class BusinessProfile(Base):
 
     user = relationship("User", backref="business_profile", foreign_keys=[user_id])
     plans = relationship("BusinessPlan", back_populates="business_profile")
+    products = relationship("Product", back_populates="business_profile", cascade="all, delete-orphan")
+    services = relationship("Service", back_populates="business_profile", cascade="all, delete-orphan")
+
+
+class Product(Base):
+    __tablename__ = "products"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    business_profile_id: Mapped[int] = mapped_column(ForeignKey("business_profiles.id"), nullable=False, index=True)
+
+    name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    category: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    price: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    unit: Mapped[str] = mapped_column(String(50), default="piece", nullable=False) # kg, piece, packet, jar, liter
+    in_stock: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    stock_quantity: Mapped[int] = mapped_column(Integer, default=10, nullable=False)
+    images: Mapped[list | None] = mapped_column(JSON, default=list, nullable=True)
+    is_promoted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    business_profile = relationship("BusinessProfile", back_populates="products")
+
+
+class Service(Base):
+    __tablename__ = "services"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    business_profile_id: Mapped[int] = mapped_column(ForeignKey("business_profiles.id"), nullable=False, index=True)
+
+    name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    category: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    price_starting: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    duration: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    is_available: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    business_profile = relationship("BusinessProfile", back_populates="services")
 
 
 class BusinessPlan(Base):
