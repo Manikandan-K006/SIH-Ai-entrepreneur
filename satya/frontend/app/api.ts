@@ -497,5 +497,68 @@ export const api = {
     return request<any>(`/voice/sms-fallback?phone=${encodeURIComponent(phone)}&text=${encodeURIComponent(text)}`, {
       method: "POST",
     });
+  },
+
+  // Farmer & Agri-Entrepreneur Hub
+  async getFarmerProfile() {
+    return request<any>("/farmer/profile");
+  },
+
+  async updateFarmerProfile(data: any) {
+    return request<any>("/farmer/profile", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async analyzeAgriEnterprise(data: { business_idea: string; location?: string; capital?: number; required_investment?: number; resources?: string; skills?: string }) {
+    return request<any>("/farmer/analyze", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async recordAgriFinancials(data: { month_year: string; sales_revenue: number; input_cost: number; transport_cost: number; labour_cost: number; equipment_cost: number; other_expense: number }) {
+    return request<any>("/farmer/financial-records", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async getAgriFinancialRecords() {
+    return request<any[]>("/farmer/financial-records");
+  },
+
+  // Funding Gap & Loan Readiness Assessment (0-100)
+  async calculateFundingGap(projectCost: number, availableCapital: number) {
+    return request<any>("/financial/funding-gap", {
+      method: "POST",
+      body: JSON.stringify({ project_cost: projectCost, available_capital: availableCapital }),
+    });
+  },
+
+  async assessLoanReadiness(data: { business_idea?: string; project_cost: number; available_capital: number; monthly_expenses: number; expected_revenue: number; has_identity_doc?: boolean; has_address_proof?: boolean; experience_years?: number }) {
+    return request<any>("/financial/loan-readiness", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async compareVerifiedLoans(category?: string) {
+    return request<any[]>("/financial/compare-loans", {
+      method: "POST",
+      body: JSON.stringify({ category }),
+    });
+  },
+
+  async prepareApplicationPackage(data: { business_name: string; business_type: string; project_cost: number; available_capital: number; monthly_revenue: number; monthly_expenses: number; scheme_id?: number }) {
+    return request<any>("/financial/prepare-application", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async getNextStepsRoadmap() {
+    return request<any>("/business/next-steps");
   }
 };

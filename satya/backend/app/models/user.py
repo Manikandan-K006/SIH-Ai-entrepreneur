@@ -8,6 +8,11 @@ from app.db.session import Base
 class UserRole(str, enum.Enum):
     ADMIN = "admin"
     ENTREPRENEUR = "entrepreneur"
+    FARMER_AGRI = "farmer_agri"
+    SHG_GROUP = "shg_group"
+    ARTISAN = "artisan"
+    SMALL_BUSINESS = "small_business"
+    SERVICE_PROVIDER = "service_provider"
     CUSTOMER = "customer"
     MENTOR = "mentor"
     SUPPLIER = "supplier"

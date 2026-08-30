@@ -16,7 +16,10 @@ import {
   BookOpen, 
   Users, 
   PackageCheck,
-  Tag
+  Tag,
+  Sprout,
+  Calculator,
+  Smile
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -24,6 +27,9 @@ export default function Sidebar() {
 
   const navItems = [
     { label: "Customer Portal", href: "/customer", icon: Search, highlight: true },
+    { label: "Farmer / Agri Hub", href: "/farmer", icon: Sprout, highlight: true },
+    { label: "Funding Gap & Loans", href: "/funding-gap", icon: Calculator, highlight: true },
+    { label: "Easy / Simplified Mode", href: "/simplified", icon: Smile, highlight: true },
     { label: "Dashboard", href: "/dashboard", icon: Home },
     { label: "SATYA AI Chat", href: "/chat", icon: MessageSquare },
     { label: "Business Plan", href: "/business", icon: Briefcase },

@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from app.core.config import settings
-from app.api.v1.endpoints import auth, profile, ai_chat, business, financial, schemes, network, communication, admin, customer, marketplace, marketing, promotions, card, voice
+from app.api.v1.endpoints import auth, profile, ai_chat, business, financial, schemes, network, communication, admin, customer, marketplace, marketing, promotions, card, voice, farmer
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -41,6 +41,7 @@ app.include_router(marketing.router, prefix=API_PREFIX)
 app.include_router(promotions.router, prefix=API_PREFIX)
 app.include_router(card.router, prefix=API_PREFIX)
 app.include_router(voice.router, prefix=API_PREFIX)
+app.include_router(farmer.router, prefix=API_PREFIX)
 
 
 @app.get("/health")

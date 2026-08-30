@@ -162,3 +162,41 @@ def get_business_profile(current_user: User = Depends(get_current_user), db: Ses
     if not profile:
         raise HTTPException(status_code=404, detail="No business profile found")
     return profile
+
+
+@router.get("/next-steps")
+def get_next_steps_roadmap(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Dynamic 'What Should I Do Next?' action roadmap for entrepreneurs & farmers."""
+    b_profile = db.query(BusinessProfile).filter(BusinessProfile.user_id == current_user.id).first()
+    plan = db.query(BusinessPlan).filter(BusinessPlan.user_id == current_user.id).first()
+
+    readiness = 65
+    steps = []
+
+    if not b_profile:
+        steps.append({"step": 1, "action": "Complete Business & Profile setup", "route": "/profile", "status": "pending"})
+    else:
+        readiness += 10
+        steps.append({"step": 1, "action": "Complete Business & Profile setup", "route": "/profile", "status": "completed"})
+
+    if not plan:
+        steps.append({"step": 2, "action": "Generate 10-section SATYA Business Plan", "route": "/business", "status": "pending"})
+    else:
+        readiness += 15
+        steps.append({"step": 2, "action": "Generate 10-section SATYA Business Plan", "route": "/business", "status": "completed"})
+
+    steps.extend([
+        {"step": 3, "action": "Calculate Funding Gap & SATYA AI Loan Readiness", "route": "/funding-gap", "status": "pending"},
+        {"step": 4, "action": "Check Verified Government Schemes & Compare Loans", "route": "/schemes", "status": "pending"},
+        {"step": 5, "action": "Prepare Application Package & Document Checklist", "route": "/funding-gap", "status": "pending"},
+        {"step": 6, "action": "List Products & Connect with Local Buyers", "route": "/products", "status": "pending"}
+    ])
+
+    return {
+        "readiness_score": min(100, readiness),
+        "user_role": current_user.role,
+        "next_steps": steps
+    }

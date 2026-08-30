@@ -13,6 +13,7 @@ from app.models.financial import FinancialPlan  # noqa: F401
 from app.models.market import MarketData  # noqa: F401
 from app.models.scheme import GovernmentScheme, GovernmentDocument, SchemeEmbedding  # noqa: F401
 from app.models.network import Mentor, Supplier, Buyer, Organization  # noqa: F401
+from app.models.farmer import FarmerProfile, AgriFinancialRecord  # noqa: F401
 from app.models.connection import ConnectionRequest, Message, Notification  # noqa: F401
 from app.models.ai_log import AIConversation, AIConversationMessage, AIExecutionLog, Recommendation  # noqa: F401
 

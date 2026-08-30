@@ -482,6 +482,38 @@ def seed_marketplace_and_card_data(db):
         db.add(cust_profile)
         db.commit()
 
+    # 1b. Farmer / Agri-Entrepreneur User
+    farmer_user = db.query(User).filter(User.email == "farmer@satya.ai").first()
+    if not farmer_user:
+        farmer_user = User(
+            email="farmer@satya.ai",
+            full_name="Murugan Agricultural Enterprise",
+            role=UserRole.FARMER_AGRI,
+            password_hash=get_password_hash("Farmer@1234"),
+            preferred_language="ta",
+            is_active=True,
+            is_demo=True,
+        )
+        db.add(farmer_user)
+        db.commit()
+        db.refresh(farmer_user)
+
+        from app.models.farmer import FarmerProfile
+        f_profile = FarmerProfile(
+            user_id=farmer_user.id,
+            state="Tamil Nadu",
+            district="Salem",
+            village_town="Omalur",
+            agri_activity_type="Dairy & Millet Processing",
+            land_size_acres=3.5,
+            available_capital=50000,
+            required_investment=200000,
+            target_business="Dairy expansion & organic finger millet processing",
+            consent_given=True
+        )
+        db.add(f_profile)
+        db.commit()
+
     # 2. Entrepreneur Business Profile
     demo_user = db.query(User).filter(User.email == "demo@satya.ai").first()
     if demo_user:
@@ -516,9 +548,9 @@ def seed_marketplace_and_card_data(db):
         existing_prods = db.query(Product).filter(Product.business_profile_id == biz.id).all()
         if not existing_prods:
             p1 = Product(business_profile_id=biz.id, name="Homemade Mango Pickle", category="Food Processing", description="Spicy, traditional Salem style raw mango pickle in sesame oil.", price=150.0, unit="500g jar", in_stock=True, stock_quantity=25, is_promoted=True)
-            p2 = Product(business_profile_id=biz.id, name="Homemade Lemon Pickle", category="Food Processing", description="Tangy fermented sun-dried lemon pickle with zero preservatives.", price=140.0, unit="500g jar", in_stock=True, stock_quantity=20)
-            p3 = Product(business_profile_id=biz.id, name="Crunchy Garlic Papad", category="Food Processing", description="Handmade urad dal papad with fresh garlic and cumin.", price=80.0, unit="200g pack", in_stock=True, stock_quantity=50)
-            p4 = Product(business_profile_id=biz.id, name="Premium Garam Masala", category="Food Processing", description="Hand-ground whole aromatic spices roasted and blended.", price=120.0, unit="100g pack", in_stock=True, stock_quantity=30)
+            p2 = Product(business_profile_id=biz.id, name="Organic Finger Millet (Ragi)", category="Agriculture", description="Unpolished organic finger millet harvested from Omalur farms.", price=90.0, unit="1kg pack", in_stock=True, stock_quantity=100)
+            p3 = Product(business_profile_id=biz.id, name="Pure Wild Forest Honey", category="Agriculture", description="Raw unprocessed wild forest honey collected from Yercaud hills.", price=350.0, unit="500g bottle", in_stock=True, stock_quantity=15)
+            p4 = Product(business_profile_id=biz.id, name="Crunchy Garlic Papad", category="Food Processing", description="Handmade urad dal papad with fresh garlic and cumin.", price=80.0, unit="200g pack", in_stock=True, stock_quantity=50)
             db.add_all([p1, p2, p3, p4])
             db.commit()
 
@@ -528,7 +560,7 @@ def seed_marketplace_and_card_data(db):
             promo = PromotionCampaign(
                 business_profile_id=biz.id,
                 tier="sponsored_listing",
-                headline="Authentic Homemade Salem Pickles & Spice Powders — Direct Delivery!",
+                headline="Authentic Homemade Salem Pickles & Organic Farm Millets — Direct Delivery!",
                 description="Special 10% discount on first local order. FSSAI verified.",
                 target_district="Salem",
                 target_category="Food Processing",

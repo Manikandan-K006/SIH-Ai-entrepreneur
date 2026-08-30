@@ -127,3 +127,91 @@ def compute_financial_plan(data: dict) -> dict[str, Any]:
         "disclaimer": "AI-estimated financial projection. Verify with a financial advisor before making decisions.",
         "is_ai_generated": False,  # calculations are deterministic, not AI
     }
+
+
+def compute_funding_gap(project_cost: float, available_capital: float) -> dict[str, Any]:
+    """Calculate project cost vs available capital -> Funding Gap breakdown."""
+    cost = max(0.0, project_cost)
+    capital = max(0.0, available_capital)
+    own_contrib = min(capital, cost)
+    funding_gap = max(0.0, cost - own_contrib)
+    percent_own = round((own_contrib / cost) * 100, 1) if cost > 0 else 100.0
+    percent_gap = round((funding_gap / cost) * 100, 1) if cost > 0 else 0.0
+
+    return {
+        "project_cost": round(cost, 2),
+        "available_capital": round(capital, 2),
+        "own_contribution": round(own_contrib, 2),
+        "funding_gap": round(funding_gap, 2),
+        "own_contribution_percent": percent_own,
+        "funding_gap_percent": percent_gap,
+        "disclaimer": "Estimates based on user inputs. Verify eligibility with relevant lending institutions."
+    }
+
+
+def compute_loan_readiness(data: dict) -> dict[str, Any]:
+    """
+    SATYA AI Loan Readiness Assessment (0-100 Score).
+    IMPORTANT: This is NOT a bank credit score.
+    """
+    has_business_plan = bool(data.get("business_idea") or data.get("has_plan"))
+    project_cost = float(data.get("project_cost", 0))
+    available_capital = float(data.get("available_capital", 0))
+    monthly_expenses = float(data.get("monthly_expenses", 0))
+    monthly_revenue = float(data.get("expected_revenue", 0))
+    has_documents = bool(data.get("has_identity_doc") or data.get("has_address_proof"))
+    experience_years = float(data.get("experience_years", 1))
+
+    # Category Scores (0-100)
+    score_plan = 80 if has_business_plan else 40
+    score_investment = 70 if (project_cost > 0 and available_capital > 0) else 45
+    score_financial = 80 if (monthly_revenue > monthly_expenses and monthly_expenses > 0) else 50
+    score_docs = 75 if has_documents else 50
+    score_experience = min(90, 50 + int(experience_years * 10))
+
+    # Weighted Overall Score
+    overall_score = int(
+        (score_plan * 0.25) +
+        (score_investment * 0.20) +
+        (score_financial * 0.25) +
+        (score_docs * 0.15) +
+        (score_experience * 0.15)
+    )
+
+    # Missing Information
+    missing_info = []
+    if project_cost <= 0:
+        missing_info.append("Estimated Project Cost breakdown")
+    if available_capital <= 0:
+        missing_info.append("Own capital contribution details")
+    if monthly_expenses <= 0:
+        missing_info.append("Monthly operating expense estimates (raw materials, labour, rent, transport)")
+    if monthly_revenue <= 0:
+        missing_info.append("Monthly sales revenue projections")
+    if not has_documents:
+        missing_info.append("Identity proof & Address proof copies")
+
+    # Recommended Next Steps
+    next_steps = [
+        "Complete 10-section SATYA Business Plan",
+        "Calculate total project cost and own capital contribution",
+        "Enter monthly income and expense estimates",
+        "Verify scheme-specific eligibility (MUDRA / KCC / PM-FME)",
+        "Prepare required application documents checklist"
+    ]
+
+    return {
+        "assessment_label": "SATYA AI Loan Readiness Assessment",
+        "overall_score": overall_score,
+        "max_score": 100,
+        "score_breakdown": {
+            "business_plan": score_plan,
+            "investment_information": score_investment,
+            "financial_projection": score_financial,
+            "required_documents": score_docs,
+            "business_experience": score_experience,
+        },
+        "missing_information": missing_info,
+        "next_steps": next_steps,
+        "disclaimer": "This assessment is NOT a bank credit score. Final loan approval is determined by the official lending institution based on current rules."
+    }
