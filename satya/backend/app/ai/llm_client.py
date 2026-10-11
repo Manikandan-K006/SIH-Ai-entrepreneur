@@ -2,9 +2,10 @@
 SATYA AI Orchestration Layer
 Central router that classifies intent and dispatches to specialized agents.
 """
+import json
 import time
 import logging
-from typing import Optional
+from typing import Optional, Any, Dict
 from openai import AsyncOpenAI
 from app.core.config import settings
 
@@ -49,6 +50,33 @@ async def chat_completion(
     return content, tokens
 
 
+async def generate_structured_output(
+    system_prompt: str,
+    user_prompt: str,
+    temperature: float = 0.3,
+    max_tokens: int = 2000,
+) -> Dict[str, Any]:
+    """
+    Generate JSON structured output using chat_completion with json_object response format.
+    Returns parsed dictionary or {'error': ...} if failed.
+    """
+    try:
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ]
+        content, _ = await chat_completion(
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            response_format={"type": "json_object"},
+        )
+        return json.loads(content)
+    except Exception as e:
+        logger.error(f"Structured output generation failed: {e}")
+        return {"error": str(e)}
+
+
 async def get_embedding(text: str) -> list[float]:
     """Get text embedding for RAG."""
     client = get_openai_client()
@@ -57,3 +85,4 @@ async def get_embedding(text: str) -> list[float]:
         input=text[:8000],  # truncate to model limit
     )
     return response.data[0].embedding
+
