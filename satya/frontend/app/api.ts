@@ -465,7 +465,7 @@ export const api = {
   },
 
   // Voice Helpline & IVR
-  async startIVR(callerNumber = "+919876543210") {
+  async startIVR(callerNumber = "") {
     return request<any>("/voice/ivr-start", {
       method: "POST",
       body: JSON.stringify({ caller_number: callerNumber }),
@@ -486,7 +486,7 @@ export const api = {
     });
   },
 
-  async triggerMissedCall(callerNumber = "+919876543210") {
+  async triggerMissedCall(callerNumber = "") {
     return request<any>("/voice/missed-call", {
       method: "POST",
       body: JSON.stringify({ caller_number: callerNumber }),

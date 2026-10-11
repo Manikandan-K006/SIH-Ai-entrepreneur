@@ -11,7 +11,7 @@ router = APIRouter(prefix="/voice", tags=["Voice & IVR Helpline"])
 
 
 class IVRInitInput(BaseModel):
-    caller_number: str = "+919876543210"
+    caller_number: str = ""
 
 
 class DTMFInput(BaseModel):
@@ -26,7 +26,7 @@ class SpeechInput(BaseModel):
 
 
 class MissedCallInput(BaseModel):
-    caller_number: str = "+919876543210"
+    caller_number: str = ""
 
 
 @router.post("/ivr-start")

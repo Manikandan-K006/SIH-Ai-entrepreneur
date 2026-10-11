@@ -7,7 +7,7 @@ import Header from "../components/Header";
 import { api } from "../api";
 
 export default function VoiceHelplinePage() {
-  const [callerPhone, setCallerPhone] = useState("+919876543210");
+  const [callerPhone, setCallerPhone] = useState("");
   const [ivrSession, setIvrSession] = useState<any>(null);
   const [dtmfSelected, setDtmfSelected] = useState<any>(null);
   const [speechText, setSpeechText] = useState("");
@@ -17,10 +17,14 @@ export default function VoiceHelplinePage() {
   const [loading, setLoading] = useState(false);
 
   const handleStartIVR = async () => {
+    if (!callerPhone.trim()) {
+      alert("Please enter a phone number to dial the SATYA Voice Helpline.");
+      return;
+    }
     setLoading(true);
     setSpeechResult(null);
     try {
-      const res = await api.startIVR(callerPhone);
+      const res = await api.startIVR(callerPhone.trim());
       setIvrSession(res);
       setDtmfSelected(null);
     } catch (e: any) {
@@ -66,9 +70,13 @@ export default function VoiceHelplinePage() {
   };
 
   const handleMissedCall = async () => {
+    if (!callerPhone.trim()) {
+      alert("Please enter a phone number to simulate a missed call.");
+      return;
+    }
     setLoading(true);
     try {
-      const res = await api.triggerMissedCall(callerPhone);
+      const res = await api.triggerMissedCall(callerPhone.trim());
       setMissedCallResult(res);
     } catch (e: any) {
       alert(e.message || "Missed call trigger failed");
@@ -78,9 +86,13 @@ export default function VoiceHelplinePage() {
   };
 
   const handleSendSMS = async () => {
+    if (!callerPhone.trim()) {
+      alert("Please enter a phone number to trigger SMS notification.");
+      return;
+    }
     setLoading(true);
     try {
-      const res = await api.sendSMSFallback(callerPhone, "Your SATYA business plan & scheme recommendation report is ready.");
+      const res = await api.sendSMSFallback(callerPhone.trim(), "Your SATYA business plan & scheme recommendation report is ready.");
       setSmsResult(res);
     } catch (e: any) {
       alert(e.message || "SMS fallback failed");
@@ -122,10 +134,11 @@ export default function VoiceHelplinePage() {
                 <div className="space-y-1">
                   <label className="font-semibold text-slate-300">Simulated Caller Phone Number:</label>
                   <input
-                    type="text"
+                    type="tel"
                     value={callerPhone}
                     onChange={(e) => setCallerPhone(e.target.value)}
-                    className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs"
+                    placeholder="Enter phone number (e.g. +91 98765 43210)"
+                    className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs placeholder-slate-500 focus:outline-none focus:border-blue-500"
                   />
                 </div>
 
