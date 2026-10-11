@@ -238,3 +238,61 @@ async def twilio_missed_call(request: Request):
 </Response>"""
     await telephony_service.handle_missed_call(caller)
     return Response(content=twiml, media_type="application/xml")
+
+
+# ---------------------------------------------------------------------------
+# Option 3: Android Phone SIM Gateway Webhook (100% Free Hardware Telephony)
+# Compatible with MacroDroid, Automate, Tasker, or Python on Android.
+# ---------------------------------------------------------------------------
+
+class AndroidGatewayCallInput(BaseModel):
+    caller_number: str
+    call_type: str = "missed_call"  # missed_call or incoming
+    language: str = "ta"            # ta, hi, en
+
+
+@router.post("/android-gateway/call")
+async def android_gateway_call(data: AndroidGatewayCallInput, db: Session = Depends(get_db)):
+    """
+    Called by an Android automation app (e.g. MacroDroid) on your spare phone.
+    When a caller dials your Indian SIM number, the app detects the call,
+    triggers this webhook, and automatically replies via SIM SMS at zero extra cost.
+    """
+    session_id = str(uuid.uuid4())
+    sess = VoiceSession(
+        session_id=session_id,
+        caller_number=data.caller_number,
+        language=data.language,
+        channel="android_sim_gateway",
+        status="completed"
+    )
+    db.add(sess)
+    db.commit()
+
+    if data.language == "ta":
+        sms_text = (
+            "வணக்கம்! சாத்யா (SATYA) AI ஆலோசனைக்கு நன்றி. "
+            "சிறு தொழில்களுக்கு முத்ரா (MUDRA) கடன் ₹50,000 முதல் ₹10 லட்சம் வரை பிணையின்றி பெறலாம். "
+            "உணவு பதப்படுத்துதலுக்கு PM-FME 35% மானியம் உண்டு. விவரங்களுக்கு உங்கள் அருகிலுள்ள வங்கியை அணுகவும்."
+        )
+    elif data.language == "hi":
+        sms_text = (
+            "नमस्ते! सत्या (SATYA) AI हेल्पलाइन में आपका स्वागत है। "
+            "मुद्रा योजना (PMMY) के तहत बिना गारंटी ₹10 लाख तक का ऋण उपलब्ध है। "
+            "अधिक जानकारी के लिए अपनी नजदीकी बैंक शाखा से संपर्क करें।"
+        )
+    else:
+        sms_text = (
+            "Hello! Thank you for contacting SATYA AI Helpline. "
+            "You are eligible for MUDRA collateral-free loans up to Rs. 10 Lakhs and PM-FME 35% subsidies. "
+            "Visit your nearest bank or DIC for instant application."
+        )
+
+    return {
+        "status": "success",
+        "caller_number": data.caller_number,
+        "action": "send_sms",
+        "sms_text": sms_text,
+        "session_id": session_id,
+    }
+

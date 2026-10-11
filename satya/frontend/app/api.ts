@@ -499,6 +499,13 @@ export const api = {
     });
   },
 
+  async triggerAndroidGatewayCall(callerNumber: string, language = "ta", callType = "missed_call") {
+    return request<any>("/voice/android-gateway/call", {
+      method: "POST",
+      body: JSON.stringify({ caller_number: callerNumber, language, call_type: callType }),
+    });
+  },
+
   // Farmer & Agri-Entrepreneur Hub
   async getFarmerProfile() {
     return request<any>("/farmer/profile");
