@@ -40,6 +40,12 @@ export default function VoiceHelplinePage() {
   const [gatewayLang, setGatewayLang] = useState<"ta" | "hi" | "en">("ta");
   const [gatewayResult, setGatewayResult] = useState<any>(null);
   const [gatewayLoading, setGatewayLoading] = useState(false);
+  const [gatewaySmsText, setGatewaySmsText] = useState("");
+  const [gatewaySmsResult, setGatewaySmsResult] = useState<any>(null);
+  const [gatewaySmsLoading, setGatewaySmsLoading] = useState(false);
+  const [gatewayLogs, setGatewayLogs] = useState<any[]>([]);
+  const [loadingLogs, setLoadingLogs] = useState(false);
+  const [guideMode, setGuideMode] = useState<"macrodroid" | "termux">("macrodroid");
 
   // --- Cloud Telephony State ---
   const [callerPhone, setCallerPhone] = useState("");

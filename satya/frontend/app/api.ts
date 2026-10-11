@@ -506,6 +506,17 @@ export const api = {
     });
   },
 
+  async triggerAndroidGatewaySMS(senderNumber: string, messageText: string, language = "ta") {
+    return request<any>("/voice/android-gateway/sms-inbound", {
+      method: "POST",
+      body: JSON.stringify({ sender_number: senderNumber, message_text: messageText, language }),
+    });
+  },
+
+  async getAndroidGatewayLogs() {
+    return request<any>("/voice/android-gateway/logs");
+  },
+
   // Farmer & Agri-Entrepreneur Hub
   async getFarmerProfile() {
     return request<any>("/farmer/profile");

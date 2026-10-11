@@ -251,6 +251,12 @@ class AndroidGatewayCallInput(BaseModel):
     language: str = "ta"            # ta, hi, en
 
 
+class AndroidGatewaySMSInput(BaseModel):
+    sender_number: str
+    message_text: str
+    language: str = "ta"            # ta, hi, en
+
+
 @router.post("/android-gateway/call")
 async def android_gateway_call(data: AndroidGatewayCallInput, db: Session = Depends(get_db)):
     """
@@ -258,41 +264,154 @@ async def android_gateway_call(data: AndroidGatewayCallInput, db: Session = Depe
     When a caller dials your Indian SIM number, the app detects the call,
     triggers this webhook, and automatically replies via SIM SMS at zero extra cost.
     """
+    from app.models.user import User
+    from app.models.business import BusinessProfile
+
     session_id = str(uuid.uuid4())
+    
+    # Check if this phone number is registered with an entrepreneur
+    clean_num = data.caller_number.replace(" ", "").replace("-", "")
+    last_10 = clean_num[-10:] if len(clean_num) >= 10 else clean_num
+    
+    user = (
+        db.query(User)
+        .filter(User.phone.like(f"%{last_10}%"))
+        .first()
+    ) if last_10 else None
+    
+    biz = None
+    if user:
+        biz = db.query(BusinessProfile).filter(BusinessProfile.user_id == user.id).first()
+
+    # Generate custom advice
+    if data.language == "ta":
+        if user and biz and biz.business_name:
+            sms_text = (
+                f"வணக்கம் {user.full_name}! உங்கள் '{biz.business_name}' தொழிலுக்கு "
+                f"முத்ரா (MUDRA) கடன் ₹10 லட்சம் வரையிலும், PM-FME 35% மூலதன மானியமும் பெறலாம். "
+                f"சாத்யா வழிகாட்டல் அறிக்கை தயாராக உள்ளது: http://satya.ai"
+            )
+        else:
+            sms_text = (
+                "வணக்கம்! சாத்யா (SATYA) AI ஆலோசனைக்கு நன்றி. "
+                "சிறு தொழில்களுக்கு முத்ரா (MUDRA) கடன் ₹50,000 முதல் ₹10 லட்சம் வரை பிணையின்றி பெறலாம். "
+                "உணவு பதப்படுத்துதலுக்கு PM-FME 35% மானியம் உண்டு. விவரங்களுக்கு: http://satya.ai"
+            )
+    elif data.language == "hi":
+        if user and biz and biz.business_name:
+            sms_text = (
+                f"नमस्ते {user.full_name}! आपके '{biz.business_name}' व्यवसाय के लिए "
+                f"मुद्रा योजना (PMMY) ₹10 लाख तक और 35% सब्सिडी उपलब्ध है। "
+                f"विस्तृत योजना के लिए देखें: http://satya.ai"
+            )
+        else:
+            sms_text = (
+                "नमस्ते! सत्या (SATYA) AI हेल्पलाइन में आपका स्वागत है। "
+                "मुद्रा योजना (PMMY) के तहत बिना गारंटी ₹10 लाख तक का ऋण उपलब्ध है। "
+                "अधिक जानकारी के लिए अपनी नजदीकी बैंक शाखा या http://satya.ai से संपर्क करें।"
+            )
+    else:
+        if user and biz and biz.business_name:
+            sms_text = (
+                f"Hello {user.full_name}! For your '{biz.business_name}' enterprise, "
+                f"MUDRA collateral-free loans up to Rs. 10 Lakhs and PM-FME 35% subsidy are available. "
+                f"View details at http://satya.ai"
+            )
+        else:
+            sms_text = (
+                "Hello! Thank you for contacting SATYA AI Helpline. "
+                "You are eligible for MUDRA collateral-free loans up to Rs. 10 Lakhs and PM-FME 35% subsidies. "
+                "Visit your nearest bank, DIC, or http://satya.ai for instant guidance."
+            )
+
     sess = VoiceSession(
         session_id=session_id,
+        user_id=user.id if user else None,
         caller_number=data.caller_number,
         language=data.language,
+        speech_transcript=f"Missed Call Received ({data.call_type})",
+        ai_response_text=sms_text,
         channel="android_sim_gateway",
         status="completed"
     )
     db.add(sess)
     db.commit()
 
-    if data.language == "ta":
-        sms_text = (
-            "வணக்கம்! சாத்யா (SATYA) AI ஆலோசனைக்கு நன்றி. "
-            "சிறு தொழில்களுக்கு முத்ரா (MUDRA) கடன் ₹50,000 முதல் ₹10 லட்சம் வரை பிணையின்றி பெறலாம். "
-            "உணவு பதப்படுத்துதலுக்கு PM-FME 35% மானியம் உண்டு. விவரங்களுக்கு உங்கள் அருகிலுள்ள வங்கியை அணுகவும்."
-        )
-    elif data.language == "hi":
-        sms_text = (
-            "नमस्ते! सत्या (SATYA) AI हेल्पलाइन में आपका स्वागत है। "
-            "मुद्रा योजना (PMMY) के तहत बिना गारंटी ₹10 लाख तक का ऋण उपलब्ध है। "
-            "अधिक जानकारी के लिए अपनी नजदीकी बैंक शाखा से संपर्क करें।"
-        )
-    else:
-        sms_text = (
-            "Hello! Thank you for contacting SATYA AI Helpline. "
-            "You are eligible for MUDRA collateral-free loans up to Rs. 10 Lakhs and PM-FME 35% subsidies. "
-            "Visit your nearest bank or DIC for instant application."
-        )
-
     return {
         "status": "success",
         "caller_number": data.caller_number,
+        "caller_name": user.full_name if user else "New Caller",
         "action": "send_sms",
         "sms_text": sms_text,
         "session_id": session_id,
     }
+
+
+@router.post("/android-gateway/sms-inbound")
+async def android_gateway_sms_inbound(data: AndroidGatewaySMSInput, db: Session = Depends(get_db)):
+    """
+    Called when an entrepreneur sends a text message/SMS to your Android Phone SIM.
+    Routes the query to SATYA NLP Core and returns tailored SMS advice for auto-reply.
+    """
+    from app.ai.agent_router import generate_satya_response
+
+    session_id = str(uuid.uuid4())
+
+    # Get AI response via SATYA NLP core
+    ai_response, _ = await generate_satya_response(
+        query=data.message_text,
+        conversation_history=[],
+        user_context={"phone": data.sender_number, "channel": "sms_inbound"},
+        language=data.language,
+    )
+
+    # Format concise SMS (trim if overly long)
+    reply_sms = ai_response[:320] if len(ai_response) > 320 else ai_response
+
+    sess = VoiceSession(
+        session_id=session_id,
+        caller_number=data.sender_number,
+        language=data.language,
+        speech_transcript=data.message_text,
+        ai_response_text=reply_sms,
+        channel="android_sim_gateway_sms",
+        status="completed"
+    )
+    db.add(sess)
+    db.commit()
+
+    return {
+        "status": "success",
+        "sender_number": data.sender_number,
+        "incoming_query": data.message_text,
+        "action": "send_sms",
+        "reply_sms": reply_sms,
+        "session_id": session_id,
+    }
+
+
+@router.get("/android-gateway/logs")
+def get_android_gateway_logs(db: Session = Depends(get_db)):
+    """Get recent activity logs from the Android SIM Gateway."""
+    sessions = (
+        db.query(VoiceSession)
+        .filter(VoiceSession.channel.like("android_sim_gateway%"))
+        .order_by(VoiceSession.created_at.desc())
+        .limit(25)
+        .all()
+    )
+    return [
+        {
+            "session_id": s.session_id,
+            "caller_number": s.caller_number,
+            "channel": s.channel,
+            "language": s.language,
+            "inquiry": s.speech_transcript,
+            "response": s.ai_response_text,
+            "status": s.status,
+            "timestamp": s.created_at.strftime("%Y-%m-%d %H:%M:%S") if s.created_at else None,
+        }
+        for s in sessions
+    ]
+
 
