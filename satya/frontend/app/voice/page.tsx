@@ -17,13 +17,20 @@ import {
   AlertCircle,
   HelpCircle,
   RefreshCw,
+  Terminal,
+  Copy,
+  Check,
+  FileText,
+  Clock,
+  ArrowRight,
+  ShieldCheck,
 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import { api } from "../api";
 
 export default function VoiceHelplinePage() {
-  const [activeTab, setActiveTab] = useState<"webcall" | "android" | "telephony">("webcall");
+  const [activeTab, setActiveTab] = useState<"webcall" | "android" | "telephony">("android");
 
   // --- Option 2: Web Call State ---
   const [isCalling, setIsCalling] = useState(false);
